@@ -1,5 +1,3 @@
-# app.py
-
 import nltk
 from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk import pos_tag
@@ -8,11 +6,12 @@ from textblob import TextBlob
 import random
 import PyPDF2
 import os
-import glob
 from flask import Flask, render_template, request, jsonify
 import matplotlib.pyplot as plt
 import io
 import base64
+from werkzeug.utils import secure_filename
+import pandas as pd
 
 # Download required NLTK data (uncomment if running first time)
 # nltk.download('punkt')
@@ -20,6 +19,11 @@ import base64
 # nltk.download('stopwords')
 
 app = Flask(__name__)
+
+ALLOWED_EXTENSIONS = {'pdf', 'xlsx', 'xls'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 class EnglishLearningAssistant:
     def __init__(self):
@@ -37,6 +41,15 @@ class EnglishLearningAssistant:
                 return text
         except Exception as e:
             return f"Error reading PDF: {e}"
+        
+    def extract_text_from_excel(self, excel_path):
+        """Extract text from an Excel file"""
+        try:
+            df = pd.read_excel(excel_path)
+            text = " ".join(df.astype(str).fillna('').values.flatten())
+            return text
+        except Exception as e:
+            return f"Error reading Excel: {e}"
         
     def analyze_text(self, text):
         """Comprehensive text analysis with educational feedback"""
@@ -66,7 +79,14 @@ class EnglishLearningAssistant:
         analysis['adjectives'] = adjectives
         
         # Sentiment and complexity
-        analysis['sentiment'] = TextBlob(text).sentiment.polarity
+        polarity = TextBlob(text).sentiment.polarity
+        if polarity > 0.3:
+            sentiment_label = "Positive"
+        elif polarity < -0.3:
+            sentiment_label = "Negative"
+        else:
+            sentiment_label = "Neutral"
+        analysis['sentiment'] = sentiment_label
         analysis['avg_sentence_length'] = round(len(words) / len(sentences), 1) if sentences else 0
         
         return analysis
@@ -95,9 +115,9 @@ class EnglishLearningAssistant:
             feedback.append("Try using more action words to make your writing more dynamic.")
         
         # Sentiment feedback
-        if analysis['sentiment'] > 0.3:
+        if analysis['sentiment'] == "Positive":
             feedback.append("Your writing has a positive tone! 😊")
-        elif analysis['sentiment'] < -0.3:
+        elif analysis['sentiment'] == "Negative":
             feedback.append("Your writing has a negative tone. 😟")
         
         return feedback
@@ -154,51 +174,51 @@ class EnglishLearningAssistant:
         
         return plot_url
 
-
 assistant = EnglishLearningAssistant()
 
 @app.route('/')
 def index():
-    # Get PDF files in current directory
-    pdf_files = glob.glob("*.pdf")
-    return render_template('index.html', pdf_files=pdf_files)
+    return render_template('index.html')
 
-@app.route('/analyze', methods=['POST'])
-def analyze():
-    pdf_file = request.form.get('pdf_file')
-    
-    if not pdf_file:
-        return jsonify({'error': 'No PDF file selected'})
-    
-    # Extract text from PDF
-    text = assistant.extract_text_from_pdf(pdf_file)
-    
-    if not text or len(text.strip()) < 10 or text.startswith("Error"):
-        return jsonify({'error': f'Could not extract enough text from {pdf_file}. Error: {text}'})
-    
+@app.route('/upload', methods=['POST'])
+def upload():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'})
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'})
+    if not allowed_file(file.filename):
+        return jsonify({'error': 'File type not allowed'})
+    filename = secure_filename(file.filename)
+    ext = filename.rsplit('.', 1)[1].lower()
+    text = ""
+    try:
+        file.save(filename)
+        if ext == 'pdf':
+            text = assistant.extract_text_from_pdf(filename)
+        elif ext in ['xlsx', 'xls']:
+            text = assistant.extract_text_from_excel(filename)
+        os.remove(filename)
+    except Exception as e:
+        return jsonify({'error': f'Error processing file: {e}'})
+
+    if not text or len(text.strip()) < 10 or (isinstance(text, str) and text.startswith("Error")):
+        return jsonify({'error': f'Could not extract enough text from {filename}. Error: {text}'})
+
     # Analyze the text
     analysis = assistant.analyze_text(text)
-    
-    # Generate feedback
     feedback = assistant.generate_feedback(analysis)
-    
-    # Get practice suggestion
     practice = assistant.practice_suggestion()
-    
-    # Create visualization
     plot_url = assistant.create_pie_chart(analysis)
-    
-    # Prepare response
+
     response = {
-        'pdf_file': pdf_file,
+        'filename': filename,
         'analysis': analysis,
         'feedback': feedback,
         'practice': practice,
         'plot_url': plot_url
     }
-    
     return jsonify(response)
-
 
 if __name__ == '__main__':
     app.run(debug=True)
