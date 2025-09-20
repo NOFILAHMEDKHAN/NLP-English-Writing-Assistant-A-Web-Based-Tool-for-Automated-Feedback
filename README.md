@@ -31,5 +31,8 @@ It also generates **visual insights** like a pie chart of parts of speech distri
 
 ---
 
-## AUTHOR
--DEVELOPED BY:NOFIL AHMED KHAN
+## 👨‍💻 Author  
+
+- **Developer**: *Nofil Ahmed Khan*  
+- 📧 Contact: [nofil2012@gmail.com]   
+---
