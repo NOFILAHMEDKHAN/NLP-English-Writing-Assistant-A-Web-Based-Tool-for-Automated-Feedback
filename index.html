@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>English Learning Assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f8fb;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            padding: 32px 24px 24px 24px;
+        }
+        h1 {
+            text-align: center;
+            color: #2d5be3;
+            margin-bottom: 24px;
+        }
+        label {
+            font-weight: 500;
+            color: #333;
+        }
+        input[type="file"], button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 16px;
+            border-radius: 6px;
+            border: 1px solid #cfd8dc;
+            font-size: 1rem;
+        }
+        button {
+            background: #2d5be3;
+            color: #fff;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #1746b6;
+        }
+        #result {
+            margin-top: 24px;
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 18px;
+            box-shadow: 0 2px 8px rgba(44,62,80,0.04);
+        }
+        ul {
+            padding-left: 20px;
+        }
+        img {
+            max-width: 100%;
+            margin-top: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(44,62,80,0.04);
+        }
+        @media (max-width: 700px) {
+            .container {
+                padding: 16px 4vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>English Learning Assistant</h1>
+        <form id="upload-form" method="post" enctype="multipart/form-data">
+            <label for="file">Upload a PDF or Excel file:</label>
+            <input type="file" name="file" id="file" accept=".pdf,.xlsx,.xls" required>
+            <button type="submit">Analyze</button>
+        </form>
+        <div id="result"></div>
+    </div>
+    <script>
+        document.getElementById('upload-form').onsubmit = async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (data.error) {
+                document.getElementById('result').innerHTML = '<p style="color:red;">' + data.error + '</p>';
+            } else {
+                let html = '<h2>Analysis for: ' + data.filename + '</h2>';
+                html += '<p><b>Sentence count:</b> ' + data.analysis.sentence_count + '</p>';
+                html += '<p><b>Word count:</b> ' + data.analysis.word_count + '</p>';
+                html += '<p><b>Unique words:</b> ' + data.analysis.unique_words + '</p>';
+                html += '<p><b>Vocabulary richness:</b> ' + data.analysis.vocab_richness + '%</p>';
+                html += '<p><b>Average sentence length:</b> ' + data.analysis.avg_sentence_length + '</p>';
+                html += '<p><b>Sentiment:</b> ' + data.analysis.sentiment + '</p>';
+                html += '<h3>Feedback</h3><ul>';
+                for (let f of data.feedback) html += '<li>' + f + '</li>';
+                html += '</ul>';
+                html += '<h3>Practice Suggestion</h3><p>' + data.practice + '</p>';
+                if (data.plot_url) {
+                    html += '<h3>Parts of Speech Distribution</h3>';
+                    html += '<img src="data:image/png;base64,' + data.plot_url + '" />';
+                }
+                document.getElementById('result').innerHTML = html;
+            }
+        };
+    </script>
+</body>
+</html>
