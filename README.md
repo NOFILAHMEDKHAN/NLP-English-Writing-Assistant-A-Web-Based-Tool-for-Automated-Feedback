@@ -1,7 +1,7 @@
 # 📘 English Learning Assistant  
 
 An interactive **Flask-based web application** that helps learners analyze their writing and improve English skills.  
-The app can extract text from PDF files, analyze vocabulary richness, sentence structures, parts of speech, sentiment, and provide personalized feedback along with practice suggestions.  
+The app can extract text from **PDF and Excel files**, analyze vocabulary richness, sentence structures, parts of speech, sentiment, and provide personalized feedback along with practice suggestions.  
 
 It also generates **visual insights** like a pie chart of parts of speech distribution for a deeper understanding of your writing style.  
 
@@ -9,7 +9,7 @@ It also generates **visual insights** like a pie chart of parts of speech distri
 
 ## ✨ Features  
 
-- 📂 **PDF Text Extraction** – Upload and analyze text directly from PDF documents.  
+- 📂 **File Upload Support** – Upload and analyze text from **PDF** or **Excel (.xlsx, .xls)** files.  
 - 📊 **Comprehensive Text Analysis** – Sentence count, word count, unique words, vocabulary richness, average sentence length.  
 - 📝 **Grammar Insights** – Identifies **nouns, verbs, adjectives**, and provides distributions.  
 - 😀 **Sentiment Analysis** – Detects whether writing is positive, neutral, or negative.  
@@ -24,7 +24,7 @@ It also generates **visual insights** like a pie chart of parts of speech distri
 
 - **Backend**: Python, Flask  
 - **NLP & Analysis**: NLTK, TextBlob  
-- **PDF Handling**: PyPDF2  
+- **File Handling**: PyPDF2 (PDF), Pandas (Excel)  
 - **Visualization**: Matplotlib  
 - **Frontend**: HTML + Flask Jinja templates  
 - **Data**: NLTK stopwords, POS tagging  
@@ -34,5 +34,7 @@ It also generates **visual insights** like a pie chart of parts of speech distri
 ## 👨‍💻 Author  
 
 - **Developer**: *Nofil Ahmed Khan*  
-- 📧 Contact: [nofil2012@gmail.com]   
+- 📧 Contact: [nofil2012@gmail.com]  
+
 ---
+
