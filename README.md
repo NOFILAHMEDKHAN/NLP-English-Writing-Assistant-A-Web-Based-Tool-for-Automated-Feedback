@@ -32,7 +32,4 @@ It also generates **visual insights** like a pie chart of parts of speech distri
 ---
 
 ## AUTHOR
-- **DEVELOPED BY:NOFIL AHMED KHAN
-
-## 🛠️ Tech Stack  
-cd english-learning-assistant
+-DEVELOPED BY:NOFIL AHMED KHAN
